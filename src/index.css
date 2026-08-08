@@ -3,7 +3,26 @@
 @custom-variant dark (&:is(.dark *));
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
   body {
-    @apply bg-gray-50 text-gray-900 dark:bg-[#050505] dark:text-white transition-colors duration-300;
+    @apply bg-gray-50 text-gray-900 dark:bg-[#050505] dark:text-white transition-colors duration-200;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: none;
   }
 }
+
+/* Scrollbar utilities for ultra-smooth layout */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
