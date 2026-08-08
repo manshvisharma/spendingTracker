@@ -1,7 +1,8 @@
-import { motion } from 'motion/react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useTransactions, useBudget } from '../hooks/useData';
 import { format, isToday, isThisWeek } from 'date-fns';
-import { ArrowUpRight, ArrowDownRight, User, Eye, EyeOff, AlertTriangle, Flame, ShieldAlert, Zap, Calendar, TrendingUp } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, User, Eye, EyeOff, AlertTriangle, Flame, ShieldAlert, Zap, Calendar, TrendingUp, Compass, Sparkles } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePrivacy } from '../contexts/PrivacyContext';
@@ -19,6 +20,8 @@ export function Dashboard() {
   const navigate = useNavigate();
   const { isPrivacyMode, togglePrivacyMode } = usePrivacy();
 
+  const [activeTab, setActiveTab] = useState<'runway' | 'velocity' | 'nospend'>('runway');
+
   const txns = (transactions || []).filter(t => !t.deletedAt);
   
   // Payday Cycle calculations
@@ -34,10 +37,6 @@ export function Dashboard() {
     .filter(t => t.type === 'income' && !t.isBorrowed)
     .reduce((a, t) => a + t.amount, 0);
 
-  const borrowedInCycle = cycleTxns
-    .filter(t => t.type === 'income' && t.isBorrowed)
-    .reduce((a, t) => a + t.amount, 0);
-
   const cycleExpenses = cycleTxns
     .filter(t => t.type === 'expense')
     .reduce((a, t) => a + t.amount, 0);
@@ -47,7 +46,6 @@ export function Dashboard() {
   const balance = allIncome - allExpenses;
 
   const todaySpend = txns.filter(t => t.type === 'expense' && isToday(t.date)).reduce((a, t) => a + t.amount, 0);
-  const weekSpend = txns.filter(t => t.type === 'expense' && isThisWeek(t.date)).reduce((a, t) => a + t.amount, 0);
 
   const monthlySavings = budget?.monthlySavings || 0;
   
@@ -74,31 +72,32 @@ export function Dashboard() {
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col gap-4 text-xs sm:text-sm"
+      className="flex flex-col gap-3.5 text-xs sm:text-sm max-w-lg mx-auto pb-6"
     >
-      <header className="flex items-center justify-between mt-1 z-10">
+      {/* HEADER */}
+      <header className="flex items-center justify-between pt-1 z-10">
         <div>
-          <p className="text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider flex items-center gap-2">
+          <p className="text-gray-500 dark:text-gray-400 text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5">
             Total Balance
             <button onClick={togglePrivacyMode} className="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
               {isPrivacyMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
             </button>
           </p>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mt-0.5 flex items-center">
-            <span className="text-gray-400 dark:text-gray-500 mr-1">₹</span>
+          <h1 className="text-3xl font-extrabold tracking-tight mt-0.5 flex items-center">
+            <span className="text-gray-400 dark:text-gray-500 mr-1 text-2xl font-normal">₹</span>
             {maskValue(balance)}
           </h1>
-          <p className="text-[11px] text-gray-500 dark:text-white/40 mt-0.5">
+          <p className="text-[10px] font-medium text-gray-500 dark:text-white/40 mt-0.5">
             Cycle: {format(paydayCycle.startDate, 'MMM d')} – {format(paydayCycle.endDate, 'MMM d')}
           </p>
         </div>
         <div className="flex gap-2 items-center">
-          <button onClick={() => navigate('/streak')} className="hidden sm:flex bg-white/70 dark:bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-gray-200 dark:border-white/10 items-center gap-1.5 shadow-sm dark:shadow-none hover:bg-white/90 dark:hover:bg-white/20 transition-colors cursor-pointer">
-            <Flame className="w-4 h-4 text-orange-400" />
-            <span className="text-xs font-medium">{noSpendInfo.currentStreak}d Streak</span>
+          <button onClick={() => navigate('/streak')} className="flex bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 px-3 py-1.5 rounded-full border border-orange-500/20 items-center gap-1 shadow-sm hover:scale-105 active:scale-95 transition-all">
+            <Flame className="w-3.5 h-3.5 fill-orange-500" />
+            <span className="text-[11px] font-bold">{noSpendInfo.currentStreak}d Streak</span>
           </button>
-          <Link to="/settings" className="w-10 h-10 bg-white/70 dark:bg-white/10 rounded-full flex items-center justify-center backdrop-blur-md border border-gray-200 dark:border-white/10 hover:bg-white/90 dark:hover:bg-white/20 transition-colors shadow-sm dark:shadow-none text-gray-700 dark:text-white">
-            <User className="w-5 h-5" />
+          <Link to="/settings" className="w-9 h-9 bg-gray-100 dark:bg-white/10 rounded-full flex items-center justify-center border border-gray-200 dark:border-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors text-gray-700 dark:text-white">
+            <User className="w-4 h-4" />
           </Link>
         </div>
       </header>
@@ -108,210 +107,233 @@ export function Dashboard() {
         <motion.div 
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
-          className="bg-red-500/15 border-2 border-red-500/40 rounded-[24px] p-4 text-red-600 dark:text-red-400 shadow-lg shadow-red-500/10 flex flex-col gap-2"
+          className="bg-rose-500/15 border border-rose-500/40 rounded-2xl p-3.5 text-rose-600 dark:text-rose-400 shadow-md flex flex-col gap-1.5"
         >
           <div className="flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-red-500 animate-pulse" />
-            <h3 className="font-extrabold text-sm uppercase tracking-wider">🔴 Low Balance / Emergency Mode</h3>
+            <ShieldAlert className="w-4 h-4 text-rose-500 animate-pulse" />
+            <h3 className="font-extrabold text-xs uppercase tracking-wider">🔴 Low Balance / Emergency Mode</h3>
           </div>
-          <p className="text-xs font-medium leading-relaxed">
-            You have <span className="font-bold">{paydayCycle.daysRemaining} days</span> until your next pocket money. At your current rate, your money will run out in approximately <span className="font-bold underline">{runway.runwayDays} days</span>.
+          <p className="text-[11px] font-medium leading-tight">
+            You have <span className="font-bold">{paydayCycle.daysRemaining} days</span> left in cycle. Money runs out in ~<span className="font-bold underline">{runway.runwayDays} days</span>.
           </p>
-          <div className="bg-red-500/10 dark:bg-red-500/20 p-2.5 rounded-xl flex items-center justify-between border border-red-500/20 mt-1">
-            <span className="text-xs font-bold">Recommended Strict Cap:</span>
-            <span className="text-sm font-black">₹{safeDailySpend}/day</span>
+          <div className="bg-rose-500/10 p-2 rounded-xl flex items-center justify-between border border-rose-500/20 text-xs">
+            <span className="font-bold">Strict Daily Cap:</span>
+            <span className="font-black">₹{safeDailySpend}/day</span>
           </div>
         </motion.div>
       )}
 
-      {/* QUICK ACTIONS */}
-      <div className="bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-[28px] p-4 shadow-sm dark:shadow-none">
-        <h4 className="font-bold mb-2.5 text-xs text-gray-500 dark:text-white/50 uppercase tracking-wider">Quick Actions</h4>
-        <div className="grid grid-cols-4 gap-2.5">
-          <button onClick={() => navigate('/add?cat=c1')} className="flex flex-col items-center justify-center gap-1.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-[20px] p-2.5 transition-colors">
-            <div className="w-9 h-9 rounded-full bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center text-orange-500 text-base">🍔</div>
-            <span className="text-[11px] font-semibold">Food</span>
-          </button>
-          <button onClick={() => navigate('/add?cat=c4')} className="flex flex-col items-center justify-center gap-1.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-[20px] p-2.5 transition-colors">
-            <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-500 text-base">🛵</div>
-            <span className="text-[11px] font-semibold">Travel</span>
-          </button>
-          <button onClick={() => navigate('/add?cat=c7')} className="flex flex-col items-center justify-center gap-1.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-[20px] p-2.5 transition-colors">
-            <div className="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center text-purple-500 text-base">🛍️</div>
-            <span className="text-[11px] font-semibold">Shop</span>
-          </button>
-          <button onClick={() => navigate('/add')} className="flex flex-col items-center justify-center gap-1.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-[20px] p-2.5 transition-colors">
-            <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-500 text-base">⚡</div>
-            <span className="text-[11px] font-semibold">Add</span>
-          </button>
-        </div>
-      </div>
-
-      {/* CORE FINANCIAL ENGINE METRICS (Runway & Velocity & Pocket Money) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {/* Money Runway Card */}
-        <div className={cn(
-          "border rounded-[26px] p-4 backdrop-blur-xl relative overflow-hidden transition-all",
-          runway.isComfortable 
-            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-            : "bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-300"
-        )}>
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Money Runway</span>
-            <span className="text-sm">{runway.isComfortable ? '🟢 Comfortable' : '🔴 Alert'}</span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black">~{runway.runwayDays} Days</span>
-            <span className="text-[11px] opacity-80">({paydayCycle.daysRemaining} days in cycle)</span>
-          </div>
-          <p className="text-[11px] mt-1.5 opacity-90 font-medium">
-            {runway.isComfortable 
-              ? "Your current spending rate safely covers the remaining days!"
-              : `At ₹${runway.avgDailySpend}/day, you're spending faster than your income.`}
-          </p>
-        </div>
-
-        {/* Days Until Next Pocket Money */}
-        <div className="bg-indigo-500/10 dark:bg-indigo-500/15 border border-indigo-500/20 text-indigo-700 dark:text-indigo-300 rounded-[26px] p-4 backdrop-blur-xl flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider">Next Pocket Money</span>
-              <Calendar className="w-3.5 h-3.5 opacity-70" />
-            </div>
-            <p className="text-xl font-black">₹{(budget?.nextPocketMoneyAmount || 10000).toLocaleString('en-IN')} <span className="text-xs font-normal opacity-80">in {paydayCycle.daysRemaining} days</span></p>
-          </div>
-          <div className="mt-2 pt-2 border-t border-indigo-500/15 flex justify-between items-center text-[11px] font-bold">
-            <span>Safe Daily Allowance:</span>
-            <span className="text-sm font-black">₹{safeDailySpend}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* SPENDING VELOCITY & ROLLOVER STATUS */}
-      <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-[28px] p-4 flex flex-col gap-3 shadow-sm dark:shadow-none">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-blue-500" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-white/60">Spending Velocity</h3>
-          </div>
-          <span className={cn(
-            "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase",
-            velocity.isFast ? "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-          )}>
-            {velocity.isFast ? '🔴 Fast Pace' : '🟢 Normal Pace'}
-          </span>
-        </div>
-        <p className="text-xs text-gray-700 dark:text-white/80 font-medium leading-relaxed">
-          {velocity.statusMessage}
-        </p>
-
-        {/* Rollover badge */}
-        {rolloverInfo.isRolloverActive && (
-          <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 p-2.5 rounded-2xl flex items-center justify-between text-amber-800 dark:text-amber-200">
-            <div className="flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-              <span className="text-xs font-bold">Budget Rollover Active</span>
-            </div>
-            <span className="text-xs font-extrabold">+₹{rolloverInfo.rolloverSavings} Carried Over</span>
-          </div>
-        )}
-      </div>
-
       {/* OVERSPEND WARNING TODAY */}
       {isOverspentToday && (
-        <div className="bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 rounded-2xl p-3 flex gap-2.5 items-start">
-          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-          <div>
-            <p className="text-xs font-bold">Overspent Today</p>
-            <p className="text-[11px] mt-0.5">You spent ₹{todaySpend} against today's target of ₹{effectiveDailyLimit}. Pause non-essential buys tomorrow!</p>
-          </div>
+        <div className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-2xl p-3 flex gap-2 items-center">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
+          <p className="text-xs font-medium">Overspent today (Spent ₹{todaySpend} / Limit ₹{effectiveDailyLimit}). Go light tomorrow!</p>
         </div>
       )}
 
-      {/* NO-SPEND DAYS CALENDAR HEATMAP */}
-      <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-[28px] p-4 shadow-sm dark:shadow-none">
-        <div className="flex justify-between items-center mb-3">
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-white/60">No-Spend Days</h3>
-            <p className="text-sm font-bold text-gray-900 dark:text-white mt-0.5">🔥 {noSpendInfo.noSpendCount} Days Saved <span className="text-xs font-normal text-gray-400">(Best Streak: {noSpendInfo.bestStreak}d)</span></p>
-          </div>
-          <button onClick={() => navigate('/streak')} className="text-xs font-bold text-blue-500 hover:underline">View Map</button>
+      {/* COMPACT STATS GRID */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-3 flex flex-col justify-between">
+          <span className="text-[10px] font-bold text-gray-400 uppercase">Today</span>
+          <p className="text-base font-extrabold text-rose-500 mt-1">₹{maskValue(todaySpend)}</p>
         </div>
-
-        {/* Mini Calendar heatmap */}
-        <div className="grid grid-cols-7 gap-1.5 mt-2">
-          {noSpendInfo.heatmapData.slice(-14).map((d, i) => (
-            <div 
-              key={i}
-              className={cn(
-                "flex flex-col items-center justify-center p-1.5 rounded-xl text-[10px] font-bold transition-all",
-                d.level === 'zero' && "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30",
-                d.level === 'low' && "bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30",
-                d.level === 'moderate' && "bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30",
-                d.level === 'high' && "bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30"
-              )}
-              title={`${d.date}: ₹${d.amount}`}
-            >
-              <span className="opacity-60 text-[9px] uppercase">{d.dayName}</span>
-              <span className="text-xs font-black">{d.dayNum}</span>
-            </div>
-          ))}
+        <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-3 flex flex-col justify-between">
+          <span className="text-[10px] font-bold text-gray-400 uppercase">Safe/Day</span>
+          <p className="text-base font-extrabold text-emerald-500 mt-1">₹{maskValue(safeDailySpend)}</p>
+        </div>
+        <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-3 flex flex-col justify-between">
+          <span className="text-[10px] font-bold text-gray-400 uppercase">Cycle Income</span>
+          <p className="text-base font-extrabold text-blue-500 mt-1">₹{maskValue(cycleIncome)}</p>
         </div>
       </div>
 
-      {/* MAIN STATS GRID */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-[28px] p-4 shadow-sm dark:shadow-none">
-          <div className="flex items-center gap-1.5 text-red-500 dark:text-red-400 mb-1.5">
-            <div className="p-1 bg-red-100 dark:bg-red-500/20 rounded-full">
-              <ArrowDownRight className="w-3.5 h-3.5" />
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider">Today Spend</span>
-          </div>
-          <p className="text-xl font-extrabold">₹{maskValue(todaySpend)}</p>
+      {/* TABBED FINANCIAL ENGINE INSIGHTS */}
+      <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-3xl p-3.5 shadow-sm">
+        {/* Navigation Tabs */}
+        <div className="flex bg-gray-100 dark:bg-black/30 p-1 rounded-2xl gap-1 mb-3">
+          <button
+            onClick={() => setActiveTab('runway')}
+            className={cn(
+              "flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1",
+              activeTab === 'runway' 
+                ? "bg-white dark:bg-white/15 text-gray-900 dark:text-white shadow-sm" 
+                : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+            )}
+          >
+            <Compass className="w-3.5 h-3.5 text-blue-500" />
+            <span>Runway</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('velocity')}
+            className={cn(
+              "flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1",
+              activeTab === 'velocity' 
+                ? "bg-white dark:bg-white/15 text-gray-900 dark:text-white shadow-sm" 
+                : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+            )}
+          >
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Velocity</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('nospend')}
+            className={cn(
+              "flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1",
+              activeTab === 'nospend' 
+                ? "bg-white dark:bg-white/15 text-gray-900 dark:text-white shadow-sm" 
+                : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+            )}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+            <span>No-Spend</span>
+          </button>
         </div>
-        <div className="bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-[28px] p-4 shadow-sm dark:shadow-none">
-          <div className="flex items-center gap-1.5 text-green-500 dark:text-green-400 mb-1.5">
-            <div className="p-1 bg-green-100 dark:bg-green-500/20 rounded-full">
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider">Cycle Income</span>
-          </div>
-          <p className="text-xl font-extrabold">₹{maskValue(cycleIncome)}</p>
+
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'runway' && (
+            <motion.div key="runway" initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 5 }} className="flex flex-col gap-2.5">
+              <div className="flex justify-between items-center">
+                <div>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Money Runway</span>
+                  <p className="text-xl font-extrabold text-gray-900 dark:text-white mt-0.5">
+                    ~{runway.runwayDays} Days Left
+                  </p>
+                </div>
+                <span className={cn(
+                  "text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider",
+                  runway.isComfortable ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600" : "bg-rose-100 dark:bg-rose-500/20 text-rose-600"
+                )}>
+                  {runway.isComfortable ? '🟢 Comfortable' : '🔴 Alert'}
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-600 dark:text-white/70 font-medium">
+                {runway.isComfortable 
+                  ? `At your current ₹${runway.avgDailySpend}/day pace, your balance easily lasts the remaining ${paydayCycle.daysRemaining} days of this cycle.` 
+                  : `You're spending ₹${runway.avgDailySpend}/day. Adjust to ₹${safeDailySpend}/day to reach payday on day ${paydayCycle.daysRemaining}.`}
+              </p>
+              <div className="bg-indigo-50 dark:bg-indigo-500/10 p-2.5 rounded-2xl flex items-center justify-between text-indigo-900 dark:text-indigo-300">
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+                  <span className="text-xs font-bold">Next Pocket Money:</span>
+                </div>
+                <span className="text-xs font-extrabold">₹{(budget?.nextPocketMoneyAmount || 10000).toLocaleString('en-IN')} in {paydayCycle.daysRemaining}d</span>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'velocity' && (
+            <motion.div key="velocity" initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 5 }} className="flex flex-col gap-2.5">
+              <div className="flex justify-between items-center">
+                <div>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Spending Pace</span>
+                  <p className="text-lg font-extrabold text-gray-900 dark:text-white mt-0.5">
+                    {velocity.spentPercent}% Spent in {velocity.timeElapsedPercent}% of Month
+                  </p>
+                </div>
+                <span className={cn(
+                  "text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider",
+                  velocity.isFast ? "bg-rose-100 dark:bg-rose-500/20 text-rose-600" : "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600"
+                )}>
+                  {velocity.isFast ? '🔴 Fast Pace' : '🟢 Normal Pace'}
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-600 dark:text-white/70 font-medium leading-relaxed">
+                {velocity.statusMessage}
+              </p>
+              {rolloverInfo.isRolloverActive && (
+                <div className="bg-amber-50 dark:bg-amber-500/10 p-2.5 rounded-2xl flex items-center justify-between text-amber-900 dark:text-amber-300">
+                  <div className="flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                    <span className="text-xs font-bold">Rollover Allowance:</span>
+                  </div>
+                  <span className="text-xs font-extrabold">+₹{rolloverInfo.rolloverSavings} Carried Over</span>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === 'nospend' && (
+            <motion.div key="nospend" initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 5 }} className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-gray-900 dark:text-white">🔥 {noSpendInfo.noSpendCount} No-Spend Days Saved</span>
+                <button onClick={() => navigate('/streak')} className="text-[11px] font-bold text-blue-500 hover:underline">Full Map &rarr;</button>
+              </div>
+              <div className="grid grid-cols-7 gap-1 mt-1">
+                {noSpendInfo.heatmapData.slice(-14).map((d, i) => (
+                  <div 
+                    key={i}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-1 rounded-xl text-[9px] font-bold",
+                      d.level === 'zero' && "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30",
+                      d.level === 'low' && "bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30",
+                      d.level === 'moderate' && "bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30",
+                      d.level === 'high' && "bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30"
+                    )}
+                    title={`${d.date}: ₹${d.amount}`}
+                  >
+                    <span className="opacity-60 text-[8px] uppercase">{d.dayName}</span>
+                    <span className="text-[10px] font-black">{d.dayNum}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* QUICK ACTIONS */}
+      <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-3 shadow-sm">
+        <h4 className="font-bold mb-2 text-[10px] text-gray-400 uppercase tracking-wider">Quick Log</h4>
+        <div className="grid grid-cols-4 gap-2">
+          <button onClick={() => navigate('/add?cat=c1')} className="flex items-center justify-center gap-1.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl p-2 transition-colors">
+            <span className="text-sm">🍔</span>
+            <span className="text-xs font-semibold">Food</span>
+          </button>
+          <button onClick={() => navigate('/add?cat=c4')} className="flex items-center justify-center gap-1.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl p-2 transition-colors">
+            <span className="text-sm">🛵</span>
+            <span className="text-xs font-semibold">Travel</span>
+          </button>
+          <button onClick={() => navigate('/add?cat=c7')} className="flex items-center justify-center gap-1.5 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl p-2 transition-colors">
+            <span className="text-sm">🛍️</span>
+            <span className="text-xs font-semibold">Shop</span>
+          </button>
+          <button onClick={() => navigate('/add')} className="flex items-center justify-center gap-1.5 bg-blue-600 text-white rounded-xl p-2 font-bold text-xs hover:bg-blue-500 transition-colors shadow-sm">
+            <span>⚡</span>
+            <span>Add</span>
+          </button>
         </div>
       </div>
 
       {/* RECENT TRANSACTIONS */}
-      <div className="bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-[28px] p-5 overflow-hidden flex flex-col shadow-sm dark:shadow-none">
-        <h4 className="font-bold mb-3 flex justify-between items-center text-sm">
-          Recent Activity
-          <Link to="/transactions" className="text-xs text-blue-500 dark:text-blue-400 font-normal hover:underline">See All</Link>
-        </h4>
-        <div className="flex flex-col gap-3.5">
+      <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-3xl p-4 shadow-sm flex flex-col">
+        <div className="flex justify-between items-center mb-2.5">
+          <h4 className="font-bold text-xs uppercase tracking-wider text-gray-400">Recent Activity</h4>
+          <Link to="/transactions" className="text-xs text-blue-500 font-bold hover:underline">View All</Link>
+        </div>
+        <div className="flex flex-col gap-2.5">
           {txns.slice(0, 5).map((txn) => (
-            <div key={txn.id} className="flex items-center justify-between group cursor-pointer">
+            <div key={txn.id} className="flex items-center justify-between p-1 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
               <div className="flex items-center gap-2.5">
-                <div 
-                  className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-lg"
-                >
+                <div className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/10 flex items-center justify-center text-sm">
                   {txn.categoryEmoji || '💰'}
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-gray-900 dark:text-white">{txn.notes || txn.categoryName || 'Income'}</p>
-                  <p className="text-[10px] text-gray-500 dark:text-white/40">{format(txn.date, 'MMM d, h:mm a')}</p>
+                  <p className="text-[10px] text-gray-400">{format(txn.date, 'MMM d, h:mm a')}</p>
                 </div>
               </div>
               <p className={cn(
                 "text-xs font-bold",
-                txn.type === 'income' ? 'text-emerald-500 dark:text-emerald-400' : 'text-orange-500 dark:text-orange-400'
+                txn.type === 'income' ? 'text-emerald-500' : 'text-gray-900 dark:text-white'
               )}>
                 {txn.type === 'income' ? '+' : '-'}₹{maskValue(txn.amount)}
               </p>
             </div>
           ))}
           {txns.length === 0 && (
-            <div className="text-center py-6 text-gray-500 text-xs">
-              No transactions yet. Tap '+' to log your first expense!
+            <div className="text-center py-5 text-gray-400 text-xs">
+              No transactions logged yet. Tap 'Add' above!
             </div>
           )}
         </div>
@@ -319,3 +341,4 @@ export function Dashboard() {
     </motion.div>
   );
 }
+

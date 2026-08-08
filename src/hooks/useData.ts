@@ -18,7 +18,21 @@ export function useTransactions() {
     );
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const txns = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
+      const txns = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() } as Transaction));
+      
+      // Auto-purge items in recycle bin older than 30 days (30 * 24 * 60 * 60 * 1000 ms)
+      const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      txns.forEach(async (t) => {
+        if (t.deletedAt && (now - t.deletedAt > THIRTY_DAYS_MS)) {
+          try {
+            await deleteDoc(doc(db, 'transactions', t.id));
+          } catch (e) {
+            console.warn("Auto-purge failed for txn:", t.id, e);
+          }
+        }
+      });
+
       queryClient.setQueryData(['transactions', user.uid], txns.sort((a, b) => b.date - a.date));
     }, (error) => {
       console.error("Error in transactions snapshot:", error);

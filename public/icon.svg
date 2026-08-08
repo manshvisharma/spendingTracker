@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="50%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="walletGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#6366f1" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle inner border -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
+
+  <!-- Glow effect -->
+  <circle cx="256" cy="256" r="140" fill="#3b82f6" opacity="0.15" filter="url(#glow)" />
+
+  <!-- Wallet Base Shape -->
+  <rect x="112" y="160" width="288" height="200" rx="28" fill="url(#walletGrad)" shadow="0 20px 40px rgba(0,0,0,0.5)"/>
+  <path d="M112 210 C 180 180, 330 180, 400 210 L 400 332 C 400 348, 388 360, 372 360 L 140 360 C 124 360, 112 348, 112 332 Z" fill="rgba(0,0,0,0.15)"/>
+
+  <!-- Wallet Flap & Clasp -->
+  <rect x="290" y="226" width="110" height="68" rx="16" fill="#1e293b" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+  <circle cx="330" cy="260" r="12" fill="url(#accentGrad)" />
+
+  <!-- Indian Rupee Symbol in Center -->
+  <text x="190" y="285" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="96" fill="#ffffff">₹</text>
+</svg>

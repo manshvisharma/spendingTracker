@@ -100,45 +100,48 @@ export function Transactions() {
       animate={{ opacity: 1 }}
       className="flex flex-col gap-6 h-full"
     >
-      <header className="flex items-center justify-between mt-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Transactions</h1>
+      <header className="flex items-center justify-between mt-1">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight">Transactions</h1>
+          <p className="text-[11px] text-gray-500 dark:text-white/40">History, filters & split payment requests</p>
+        </div>
       </header>
 
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input 
           type="text" 
           placeholder="Search transactions..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-[24px] py-4 pl-12 pr-4 text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all shadow-sm dark:shadow-none"
+          className="w-full bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl py-2.5 pl-10 pr-3 text-xs text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all shadow-sm"
         />
       </div>
       
-      <div className="flex flex-col gap-3 -mt-2">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="flex flex-col gap-2 -mt-1">
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
           {(['all', 'expense', 'income', 'borrowed', 'high'] as const).map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={cn(
-                "px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors",
+                "px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all",
                 filter === f 
-                  ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900" 
-                  : "bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10"
+                  ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-sm" 
+                  : "bg-white dark:bg-white/5 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 hover:bg-gray-50"
               )}
             >
               {f === 'high' ? '> ₹1000' : f === 'borrowed' ? '💳 Borrowed' : f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {(['all', 'today', 'week', 'month'] as const).map(f => (
             <button
               key={f}
               onClick={() => setTimeFilter(f)}
               className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors uppercase tracking-wider",
+                "px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap transition-colors uppercase tracking-wider",
                 timeFilter === f 
                   ? "bg-blue-50 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400" 
                   : "bg-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
@@ -150,52 +153,52 @@ export function Transactions() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-8 space-y-6">
+      <div className="flex-1 overflow-y-auto pb-8 space-y-4">
         {groupTransactions().map(([label, items]) => (
           <div key={label}>
-            <h3 className="text-[10px] font-bold text-gray-500 dark:text-white/50 uppercase tracking-wider mb-3 ml-2">{label}</h3>
-            <div className="flex flex-col gap-2 bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-[32px] p-6 overflow-hidden shadow-sm dark:shadow-none">
+            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">{label}</h3>
+            <div className="flex flex-col gap-1.5 bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl p-3.5 overflow-hidden shadow-sm">
               {items.map((txn, index) => (
                 <motion.div 
                   layout
                   key={txn.id} 
                   className={cn(
-                    "flex items-center justify-between group cursor-pointer py-2",
-                    index !== items.length - 1 && "border-b border-gray-100 dark:border-white/5 pb-4"
+                    "flex items-center justify-between group cursor-pointer py-1.5",
+                    index !== items.length - 1 && "border-b border-gray-100 dark:border-white/5 pb-2.5"
                   )}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div 
-                      className="w-10 h-10 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-xl shrink-0"
+                      className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-base shrink-0"
                     >
                       {txn.categoryEmoji || '💰'}
                     </div>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white flex items-center gap-2">
-                        {txn.notes || txn.categoryName || 'Income'}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-xs text-gray-900 dark:text-white flex items-center gap-1.5 truncate">
+                        <span className="truncate">{txn.notes || txn.categoryName || 'Income'}</span>
                         {txn.isBorrowed && !txn.repaid && (
-                          <span className="text-[9px] bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                          <span className="shrink-0 text-[8px] bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
                             Borrowed
                           </span>
                         )}
                         {txn.isBorrowed && txn.repaid && (
-                          <span className="text-[9px] bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                          <span className="shrink-0 text-[8px] bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
                             Repaid
                           </span>
                         )}
                       </p>
-                      <p className="text-[10px] text-gray-500 dark:text-white/40">{format(txn.date, 'h:mm a')}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-white/40 mt-0.5">{format(txn.date, 'h:mm a • d MMM')}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <p className={cn(
-                      "text-sm font-bold mr-1",
+                      "text-xs font-black mr-0.5",
                       txn.type === 'income' ? 'text-emerald-500 dark:text-emerald-400' : 'text-orange-500 dark:text-orange-400'
                     )}>
                       {txn.type === 'income' ? '+' : '-'}₹{txn.amount.toLocaleString('en-IN')}
                     </p>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-0.5">
                       {txn.isBorrowed && !txn.repaid && (
                         <button 
                           onClick={(e) => {
@@ -203,7 +206,7 @@ export function Transactions() {
                             e.stopPropagation();
                             handleMarkRepaid(txn);
                           }}
-                          className="p-1.5 text-emerald-600 bg-emerald-50 dark:bg-emerald-500/20 hover:bg-emerald-100 rounded-full transition-all"
+                          className="p-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-500/20 hover:bg-emerald-100 rounded-lg transition-all"
                           title="Mark as Repaid"
                         >
                           <Check className="w-3.5 h-3.5" />
@@ -212,7 +215,7 @@ export function Transactions() {
 
                       <button 
                         onClick={() => handleDuplicate(txn)}
-                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/20 rounded-full transition-all"
+                        className="p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/20 rounded-lg transition-all"
                         title="Duplicate Transaction"
                       >
                         <Copy className="w-3.5 h-3.5" />
@@ -221,7 +224,7 @@ export function Transactions() {
                       {txn.type === 'expense' && (
                         <button 
                           onClick={() => { setSplitTxn(txn); setSplitCount(2); }}
-                          className="p-1.5 text-gray-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-500/20 rounded-full transition-all"
+                          className="p-1 text-gray-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-500/20 rounded-lg transition-all"
                           title="Split Expense"
                         >
                           <Share2 className="w-3.5 h-3.5" />
@@ -234,7 +237,7 @@ export function Transactions() {
                           e.stopPropagation();
                           setConfirmDeleteTxn(txn);
                         }}
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-full transition-all"
+                        className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg transition-all"
                         title="Delete transaction"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

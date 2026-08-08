@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "MoneyHisab",
+  "description": "Smart Pocket Money & Expense Tracker with Money Runway, Spending Velocity, and Automated Insights",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

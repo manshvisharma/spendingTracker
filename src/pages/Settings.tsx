@@ -200,25 +200,42 @@ export function Settings() {
 
       {showRecycleBin && (
         <div className="bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-[32px] p-6 shadow-sm dark:shadow-none mb-4">
-          <h3 className="font-bold mb-4">Deleted Transactions</h3>
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h3 className="font-bold text-sm text-gray-900 dark:text-white">Recycle Bin</h3>
+              <p className="text-[11px] text-gray-500 dark:text-white/40">Deleted items are permanently purged after 30 days</p>
+            </div>
+            <span className="text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full uppercase">
+              Auto-Purge 30d
+            </span>
+          </div>
+
           <div className="flex flex-col gap-2 max-h-60 overflow-y-auto">
             {transactions?.filter(t => t.deletedAt).length === 0 ? (
-              <p className="text-sm text-gray-500">Recycle bin is empty.</p>
+              <p className="text-xs text-gray-500 py-4 text-center">Recycle bin is empty.</p>
             ) : (
-              transactions?.filter(t => t.deletedAt).map(txn => (
-                <div key={txn.id} className="flex justify-between items-center bg-gray-50 dark:bg-white/5 p-3 rounded-2xl">
-                  <div>
-                    <p className="text-sm font-bold">{txn.notes || txn.categoryName}</p>
-                    <p className="text-xs text-gray-500">₹{txn.amount}</p>
+              transactions?.filter(t => t.deletedAt).map(txn => {
+                const daysLeft = Math.max(0, 30 - Math.floor((Date.now() - (txn.deletedAt || Date.now())) / (1000 * 60 * 60 * 24)));
+                return (
+                  <div key={txn.id} className="flex justify-between items-center bg-gray-50 dark:bg-white/5 p-3 rounded-2xl border border-gray-100 dark:border-white/5">
+                    <div>
+                      <p className="text-xs font-bold text-gray-900 dark:text-white">{txn.notes || txn.categoryName || 'Transaction'}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs font-semibold text-rose-500">₹{txn.amount}</span>
+                        <span className="text-[10px] text-gray-400">• Purges in {daysLeft}d</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => txn.id && restoreTxn.mutate(txn.id)}
+                      className="p-2 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl hover:scale-105 active:scale-95 transition-transform flex items-center gap-1 text-xs font-bold"
+                      title="Restore transaction"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Restore</span>
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => txn.id && restoreTxn.mutate(txn.id)}
-                    className="p-2 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </button>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
