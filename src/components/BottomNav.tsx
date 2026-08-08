@@ -12,9 +12,9 @@ export function BottomNav() {
   const navItems = [
     { to: '/', icon: LayoutDashboard, label: 'Dash' },
     { to: '/transactions', icon: Receipt, label: 'Txns' },
-    { to: '/add', icon: Plus, label: 'Add', isFab: true },
     { to: '/planner', icon: Target, label: 'Goals' },
     { to: '/analytics', icon: BarChart3, label: 'Stats' },
+    { to: '/add', icon: Plus, label: 'Add', isFab: true },
   ];
 
   const handleTouchSlide = (e: TouchEvent<HTMLDivElement>) => {
@@ -59,9 +59,9 @@ export function BottomNav() {
               onMouseEnter={() => setHoveredPath(item.to)}
               className={({ isActive: linkActive }) =>
                 cn(
-                  "relative flex flex-col items-center justify-center transition-all duration-200 z-10 px-2.5 py-1.5 rounded-2xl select-none touch-none",
+                  "relative flex flex-col items-center justify-center transition-all duration-200 z-10 px-2 py-1 rounded-2xl select-none touch-none",
                   item.isFab 
-                    ? "w-11 h-11 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-full shadow-md shadow-blue-500/30 hover:scale-105 active:scale-95 flex items-center justify-center border-2 border-white dark:border-[#121212] -translate-y-2.5"
+                    ? "w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-2xl shadow-md shadow-blue-500/25 hover:scale-105 active:scale-95 flex items-center justify-center my-auto ml-1 shrink-0"
                     : "flex-1 text-center"
                 )
               }
