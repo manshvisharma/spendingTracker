@@ -1,0 +1,16 @@
+{
+  "name": "MoneyHisab",
+  "short_name": "MoneyHisab",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "description": "Premium personal finance tracking",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
