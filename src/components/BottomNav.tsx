@@ -17,33 +17,17 @@ export function BottomNav() {
     { to: '/add', icon: Plus, label: 'Add', isFab: true },
   ];
 
-  const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
+  const handleTouchSlide = (e: TouchEvent<HTMLDivElement>) => {
     if (!e.touches || e.touches.length === 0) return;
     const touch = e.touches[0];
     const elem = document.elementFromPoint(touch.clientX, touch.clientY);
     const linkElem = elem?.closest('[data-nav-path]') as HTMLElement | null;
     if (linkElem) {
       const path = linkElem.getAttribute('data-nav-path');
-      if (path) setHoveredPath(path);
+      if (path && path !== location.pathname) {
+        navigate(path);
+      }
     }
-  };
-
-  const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
-    if (!e.touches || e.touches.length === 0) return;
-    const touch = e.touches[0];
-    const elem = document.elementFromPoint(touch.clientX, touch.clientY);
-    const linkElem = elem?.closest('[data-nav-path]') as HTMLElement | null;
-    if (linkElem) {
-      const path = linkElem.getAttribute('data-nav-path');
-      if (path) setHoveredPath(path);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (hoveredPath && hoveredPath !== location.pathname) {
-      navigate(hoveredPath);
-    }
-    setHoveredPath(null);
   };
 
   return (
@@ -59,14 +43,13 @@ export function BottomNav() {
     >
       <div 
         onMouseLeave={() => setHoveredPath(null)}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onTouchStart={handleTouchSlide}
+        onTouchMove={handleTouchSlide}
         className="relative bg-white/90 dark:bg-[#121212]/90 backdrop-blur-2xl saturate-150 border border-black/5 dark:border-white/10 rounded-[28px] h-[58px] px-3 flex items-center justify-between shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
       >
         {navItems.map((item) => {
           const isActive = location.pathname === item.to;
-          const isBubbleTarget = hoveredPath ? hoveredPath === item.to : isActive;
+          const isHovered = hoveredPath === item.to;
 
           return (
             <NavLink
@@ -83,12 +66,21 @@ export function BottomNav() {
                 )
               }
             >
-              {/* SMOOTH SLIDING GLASS BUBBLE */}
-              {!item.isFab && isBubbleTarget && (
+              {/* SLIDING ACTIVE GLASS BUBBLE */}
+              {!item.isFab && isActive && (
                 <motion.div
-                  layoutId="navSlideBubble"
-                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                  className="absolute inset-0 bg-blue-500/15 dark:bg-blue-400/20 border border-blue-500/25 dark:border-blue-400/35 rounded-2xl shadow-sm -z-10"
+                  layoutId="activeBubble"
+                  transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                  className="absolute inset-0 bg-blue-500/10 dark:bg-blue-400/20 border border-blue-500/20 dark:border-blue-400/30 rounded-2xl shadow-sm -z-10"
+                />
+              )}
+
+              {/* SLIDING HOVER BUBBLE (WHEN NOT ACTIVE) */}
+              {!item.isFab && !isActive && isHovered && (
+                <motion.div
+                  layoutId="hoverBubble"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  className="absolute inset-0 bg-black/5 dark:bg-white/10 rounded-2xl -z-10"
                 />
               )}
 
@@ -98,17 +90,17 @@ export function BottomNav() {
                     "transition-all duration-200", 
                     item.isFab 
                       ? "w-5 h-5 text-white" 
-                      : isBubbleTarget 
+                      : isActive 
                         ? "w-[17px] h-[17px] text-blue-600 dark:text-blue-400 scale-110 -translate-y-0.5" 
                         : "w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200"
                   )} 
-                  strokeWidth={isBubbleTarget || item.isFab ? 2.5 : 1.8} 
+                  strokeWidth={isActive || item.isFab ? 2.5 : 1.8} 
                 />
                 {!item.isFab && (
                   <span 
                     className={cn(
                       "text-[9px] font-extrabold tracking-tight whitespace-nowrap leading-none mt-0.5 transition-colors",
-                      isBubbleTarget ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"
+                      isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"
                     )}
                   >
                     {item.label}
