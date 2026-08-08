@@ -1,23 +1,40 @@
 {
-  "name": "MoneyHisab - Smart Pocket Money Tracker",
+  "name": "MoneyHisab - Smart Pocket Money & Expense Tracker",
   "short_name": "MoneyHisab",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0c",
-  "theme_color": "#0a0a0c",
+  "background_color": "#050505",
+  "theme_color": "#050505",
   "description": "Smart Pocket Money & Expense Tracker with Money Runway, Spending Velocity, and Automated Insights",
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/app-icon.jpg",
       "sizes": "1024x1024",
       "type": "image/jpeg",
       "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
     }
   ]
 }
